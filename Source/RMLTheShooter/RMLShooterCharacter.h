@@ -19,6 +19,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void HandleMoveForward(float Value);
+	void HandleMoveRight(float Value);
+
+	// For controller
+	void HandleTurnRate(float Rate);
+
+	void HandleLookUpRate(float Rate);
+
+	// For mouse
+	void HandleTurn(float Value);
+	void HandleLookUp(float Value);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -35,6 +47,24 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	/// <summary>
+	/// Base Turn Rate, in deg/sec
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float BaseTurnRate;
+
+	/// <summary>
+	/// Base Look Up Rate, in deg/sec, which affects up and down rotation
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float BaseLookUpRate;
+
+	/// <summary>
+	/// Mouse rotation sensitivity
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float BaseMouseRotationSensitivity;
 
 public:
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const;
