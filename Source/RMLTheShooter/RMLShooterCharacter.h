@@ -4,14 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AmmoType.h"
 #include "RMLShooterCharacter.generated.h"
 
 UENUM(BlueprintType)
-enum class EAmmoType : uint8 
+enum class ECombatState : uint8 
 {
-	EAT_9mm UMETA(DisplayName = "9mm"),
-	EAT_AR UMETA(DisplayName = "AssaultRifle"),
-	EAT_MAX UMETA(DisplayName = "DefaultMAX")
+	EAS_Unoccupied UMETA(DisplayName = "Unoccupied"),
+	EAS_FireTimerInProgress UMETA(DisplayName = "FireTimerInProgress"),
+	EAS_Reloading UMETA(DisplayName = "Reloading"),
+
+	EAS_MAX UMETA(DisplayName = "DefaultMAX"),
 };
 
 UCLASS()
@@ -97,6 +100,42 @@ protected:
 	bool WeaponHasAmmo();
 
 	class ARMLWeapon* GetEquippedWeapon();
+
+	void PlayFireSound();
+	void SendBullet();
+	void PlayGunfireMontage();
+	void PlayReloadMontage();
+	void PlayMontage(class UAnimMontage* MontageToPlay, FName SectionName);
+
+	void ReloadButtonPressed();
+	void ReloadWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void HandleFinishReloading();
+
+	bool CarryingAmmo();
+
+	/// <summary>
+	/// Called From Animation Blueprint with Grab Clip notify
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void GrabClip();
+
+	/// <summary>
+	/// Called From Animation Blueprint with Release Clip notify
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	void ReleaseClip();
+
+	void CrouchButtonPressed();
+
+	void HandleJumpPressed();
+	void HandleJumpReleased();
+
+	void InterpCapsuleHalfHeight(float DeltaTime);
+
+	void Aim();
+	void StopAiming();
 
 public:	
 	// Called every frame
@@ -272,11 +311,50 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Items", meta = (AllowPrivateAccess = "true"))
 	int32 StartingARAmmo;
 
+	/// <summary>
+	/// Combat state for handling different states
+	/// </summary>
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	ECombatState CombatState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	bool bAutoReloadWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ReloadMontage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	FTransform ClipTransform;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* HandSceneComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bCrouching;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float BaseMovementSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float CrouchMovementSpeed;
+
+	float CurrentCapsuleHalfHeight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float StandingCapsuleHalfHeight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float CrouchingCapsuleHalfHeight;
+
+	bool bAimingButtonPressed;
+
 public:
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const;
 	FORCEINLINE bool GetAiming() const;
-	
+	FORCEINLINE ECombatState GetCombatState() const { return CombatState; }
+	FORCEINLINE bool GetCrouching() const { return bCrouching; }
+
 	UFUNCTION(BlueprintCallable)
 	float GetCrosshairSpreadMultiplier() const;
 
@@ -287,6 +365,9 @@ public:
 	FVector GetCameraInterpLocation();
 
 	void GetPickupItem(ARMLItem* Item);
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetAmmoInMag() const;
 private:
 	void HandleCameraAimingFov(float DeltaTime);
 };

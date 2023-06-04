@@ -175,6 +175,12 @@ private:
 
 #pragma endregion
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* PickupSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* EquipSound;
+
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
@@ -183,6 +189,8 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
 	void SetItemState(EItemState newItemState);
 	void StartItemCurve(ARMLShooterCharacter* CharacterToMove);
+	FORCEINLINE USoundCue* GetPickupSound() const { return PickupSound; }
+	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
 private:
 	bool TryChangeOverlapAmount(AActor* OtherActor, int amount);
 };

@@ -6,7 +6,13 @@
 ARMLWeapon::ARMLWeapon():
 	ThrowWeaponTime(0.7f),
 	bFalling(false),
-	Ammo{0}
+	Ammo{0},
+	WeaponType {EWeaponType::EWT_SubmachineGun},
+	AmmoType{EAmmoType::EAT_9mm},
+	ReloadMontageSection{TEXT("ReloadSMG")},
+	MagazineCapacity{30},
+	bMovingClip {false},
+	ClipBoneName {TEXT("smg_clip")}
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -45,12 +51,23 @@ void ARMLWeapon::ThrowWeapon()
 			this, 
 			&ARMLWeapon::StopFalling,
 			ThrowWeaponTime);
-
 }
 
 void ARMLWeapon::DecrementAmmo()
 {
 	Ammo = FMath::Max(0, Ammo - 1);
+}
+
+void ARMLWeapon::ReloadAmmo(int32 Amount)
+{
+	checkf(Ammo + Amount <= MagazineCapacity, 
+		TEXT("Attempted to add amount which leads to magazine capacity overflow"));
+	Ammo += Amount;
+}
+
+bool ARMLWeapon::ClipIsFull() const
+{
+	return Ammo >= MagazineCapacity;
 }
 
 void ARMLWeapon::StopFalling()
